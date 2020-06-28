@@ -50,7 +50,8 @@ def getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2):
     R = 6371
     dLat = deg2rad(lat2 - lat1)
     dLon = deg2rad(lon2 - lon1)
-    a = sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(dLon / 2)
+    a = sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * \
+        cos(deg2rad(lat2)) * sin(dLon / 2) * sin(dLon / 2)
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     d = R * c
     return d
@@ -73,7 +74,8 @@ def searchproducts(request):
         nearest_war = user_loc
         for wh in warehouses:
             try:
-                wareitem = get_object_or_404(KeyVal, locname=wh, product=item.product)
+                wareitem = get_object_or_404(
+                    KeyVal, locname=wh, product=item.product)
             except:
                 continue
             if (wareitem.quantity >= item.quantity):
@@ -83,7 +85,8 @@ def searchproducts(request):
                     break
                 lat2 = wh.loc_x
                 lon2 = wh.loc_y
-                lat1, lon1, lat2, lon2 = float(lat1), float(lon1), float(lat2), float(lon2)
+                lat1, lon1, lat2, lon2 = float(lat1), float(
+                    lon1), float(lat2), float(lon2)
                 dist = getDistanceFromLatLonInKm(lat1, lat2, lon1, lon2)
                 print(item.product.name)
                 print(wh.location)

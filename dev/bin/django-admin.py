@@ -1,4 +1,4 @@
-#!/home/rahul/Desktop/shop_final/dev/bin/python3
+#!/home/rahul/Desktop/Essential-Store/dev/bin/python3
 from django.core import management
 
 if __name__ == "__main__":

@@ -65,9 +65,11 @@
                 <div class="col-md-6">
                   <label for="c_email_address" class="text-black">Email Address <span class="text-danger">*</span></label>
                   {% render_field form.email class="form-control" id="c_email_address" %}
-
                 </div>
-
+                  <div class="col-md-6">
+                  <label for="c_time_slot" class="text-black">Time Slot <span class="text-danger">*</span></label>
+                  {% render_field form.time_slot class="form-control" id="c_time_slot" %}
+                </div>
               </div>
 
                 <p><input type="submit"   class="btn btn-primary btn-lg py-3 btn-block" value="Confirm Order"></p>
