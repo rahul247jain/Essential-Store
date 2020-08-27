@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, get_list_or_404
-from users.models import User
+from users.models import User, Profile
 from orders.models import Order, OrderItem
 from .models import Warehouse, KeyVal
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from math import sin, cos, sqrt, atan2, radians, pi
 import json
 
-cities = {
+localities = {
     "Bhim Colony": "23.02579,72.58727",
     "Basai Enclave-2": "12.97194,77.59369",
     "Chandan Vihar": "13.08784,80.27847",
@@ -63,15 +65,19 @@ def deg2rad(deg):
 
 def searchproducts(request):
     fcart = OrderItem.objects.filter(order_id=request.session['order.id'])
+    totalitems = OrderItem.objects.filter(
+        order_id=request.session['order.id']).count()
     warehouses = Warehouse.objects.all()
     user_order = get_object_or_404(Order, id=request.session['order.id'])
-    user_loc = user_order.city
+    user_loc = user_order.locality
     print(user_loc)
-    lat1, lon1 = cities.get(user_loc).split(",")
+    lat1, lon1 = localities.get(user_loc).split(",")
     dis = {}
+    count = 0
+    extra = False
     for item in fcart:
         min_dist = 10000000000.00
-        nearest_war = user_loc
+        nearest_war = ''
         for wh in warehouses:
             try:
                 wareitem = get_object_or_404(
@@ -79,7 +85,7 @@ def searchproducts(request):
             except:
                 continue
             if (wareitem.quantity >= item.quantity):
-                if user_loc == wh.location:  # Skip distance to itself
+                if user_loc == wh.location:  # Skip distance calculation
                     min_dist = 0
                     nearest_war = wh
                     break
@@ -88,18 +94,47 @@ def searchproducts(request):
                 lat1, lon1, lat2, lon2 = float(lat1), float(
                     lon1), float(lat2), float(lon2)
                 dist = getDistanceFromLatLonInKm(lat1, lat2, lon1, lon2)
-                print(item.product.name)
-                print(wh.location)
-                print(dist)
+                # print(item.product.name)
+                # print(wh.location)
+                # print(dist)
                 if (dist <= min_dist):
                     min_dist = dist
                     nearest_war = wh
                 else:
                     continue
-                print(min_dist)
+                print(nearest_war.location)
             else:
                 continue
+        if nearest_war and nearest_war.time_slot == item.order.time_slot:
+            count = count+1
 
         dis[item.product.name] = nearest_war
+        if(nearest_war):
+            item.selected_shop = nearest_war
+            item.save()
+            print(nearest_war.location)
+        else:
+            user_order.total_price = user_order.total_price-item.get_cost()
+            print(user_order.total_price)
 
-    return render(request, 'warehouse/delivery_area.html', {'waredis': dis})
+    # print(count)
+    # Adding extra charge to the user's account
+    if count < (totalitems/2):
+        extra = 50
+
+    return render(request, 'warehouse/delivery_area.html', {'waredis': dis, 'extra': extra, 'user_order': user_order})
+
+
+@staff_member_required
+def shopkeeper_view(request):
+    cur_user = request.user
+    items = OrderItem.objects.filter(selected_shop=cur_user.profile.warehouse)
+    # unplaced_order=OrderItem.objects.filter(order__paid=False)
+    return render(request, 'shopkeeper.html', {'items': items})
+
+# @login_required
+# def delivery_boy(request):
+#     user = User.objects.get(id=request.user.id)
+#     boy = Profile.objects.filter(delivery_boy=True)
+
+#     return redirect('warehouse: delivery_boy.html')

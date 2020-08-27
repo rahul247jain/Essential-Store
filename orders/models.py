@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from shop.models import Product
 from warehouse.models import Warehouse
 
-CITY_CHOICES = (
+LOCALITY_CHOICES = (
     ('Bhim Colony', 'Bhim Colony'),
     ('Basai Enclave-2', 'Basai Enclave-2'),
     ('Chandan Vihar', 'Chandan Vihar'),
@@ -29,18 +29,6 @@ CITY_CHOICES = (
     ('Mohan Nagar', 'Mohan Nagar'),
     ('Vatika Kunj', 'Vatika Kunj'),
     ('Defense Enclave', 'Defense Enclave'),
-    # ('Agra', 'Agra'),
-    # ('Meerut', 'Meerut'),
-    # ('Madurai', 'Madurai'),
-    # ('Guwahati', 'Guwahati'),
-    # ('Thiruvananthapuram', 'Thiruvananthapuram'),
-    # ('Tiruchchirappalli', 'Tiruchchirappalli'),
-    # ('Kota', 'Kota'),
-    # ('Jammu', 'Jammu'),
-    # ('Mangalore', 'Mangalore'),
-    # ('Ajmer', 'Ajmer'),
-    # ('Shillong', 'Shillong'),
-    # ('New Delhi', 'New Delhi')
 )
 
 SLOT_CHOICES = (
@@ -55,15 +43,17 @@ class Order(models.Model):
         User, on_delete=models.CASCADE, related_name='user', null=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    email = models.EmailField()
-    address = models.CharField(max_length=250)
-    postal_code = models.CharField(max_length=20)
-    city = models.CharField(max_length=100, choices=CITY_CHOICES, null=True)
+    email = models.EmailField(blank=True)
+    house_number = models.PositiveIntegerField(blank=True, null=True)
+    locality = models.CharField(
+        max_length=100, choices=LOCALITY_CHOICES, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
     time_slot = models.CharField(
         max_length=100, choices=SLOT_CHOICES, null=False)
+    total_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True)
 
     class Meta:
         ordering = ('-created',)

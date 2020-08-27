@@ -4,7 +4,7 @@ from django.urls import reverse
 from .models import OrderItem
 from .forms import Order, OrderCreateForm
 from cart.cart import Cart
-#from .tasks import order_created
+import math
 
 
 def order_create(request):
@@ -15,21 +15,18 @@ def order_create(request):
         form = OrderCreateForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
+            order.total_price = math.ceil(cart.get_total_price())
             order.user = current_user_object
             order = form.save()
             for item in cart:
                 OrderItem.objects.create(order=order,
-                                        product=item['product'],
-                                        price=item['price'],
-                                        quantity=item['quantity'])
+                                         product=item['product'],
+                                         price=item['price'],
+                                         quantity=item['quantity'])
             cart.clear()
-            #launch asynchronous task
-            #order_created.delay(order.id)
-            #set order in session
-            request.session['order.id']=order.id
-            #redirect for warehouse
+
+            request.session['order.id'] = order.id
+            # redirect for warehouse
             return redirect(reverse('warehouse:searchproducts'))
         else:
             return render(request, 'orders/order/create.html', {'form': form})
-           # else:
-           #     form = OrderCreateForm()

@@ -11,7 +11,6 @@ from orders.models import OrderItem, Order
 from shop.models import Product
 
 
-
 def signup_view(request):
     """The view that handles sign ups
 
@@ -24,7 +23,7 @@ def signup_view(request):
 
     if request.method == 'POST':
         form = SignUpForm(request.POST)
-        
+
         if form.is_valid():
             user = form.save()
             user.refresh_from_db()
@@ -63,7 +62,7 @@ def login_view(request):
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             if user.profile.shopkeeper:
-                return render(request,'abc.html')
+                return redirect('warehouse:shopkeeper_view')
             return redirect('/')
         else:
             # messages.error(request, 'Username or Password not correct')
@@ -86,15 +85,18 @@ def logout_view(request):
         logout(request)
         return render(request, 'users/logout.html')
 
+
 def myorders(request):
     user_order = Order.objects.all()
     item_order = OrderItem.objects.all()
-    product= Product.objects.all()
-    return render(request, 'users/myorders.html', {'item_order': item_order, 'user_order':user_order , 'product': product})
-    
+    product = Product.objects.all()
+    return render(request, 'users/myorders.html', {'item_order': item_order, 'user_order': user_order, 'product': product})
+
+
 def detail_view(request):
 
     return render(request, 'users/user_details.html')
+
 
 def change_password(request):
     if request.method == 'POST':
@@ -102,7 +104,8 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
-            messages.success(request, 'Your password was successfully updated!')
+            messages.success(
+                request, 'Your password was successfully updated!')
             return render(request, 'users/password_changed.html')
         else:
             messages.error(request, 'Please correct the error below.')
